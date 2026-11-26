@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A modern, easy-to-use calculator.">
+    <title>Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/calculator.css}">
+</head>
+<body>
+    <main class="calculator-page">
+        <section class="calculator" aria-label="Calculator">
+            <div class="display" aria-live="polite">
+                <div id="calculation" class="calculation"></div>
+                <input id="display" class="display-value" type="text" value="0" readonly aria-label="Calculator display">
+            </div>
+
+            <nav class="mode-tabs" aria-label="Calculator modes">
+                <button type="button" class="mode-tab active" data-mode="standard" aria-selected="true">Standard</button>
+                <button type="button" class="mode-tab" data-mode="scientific" aria-selected="false">Scientific</button>
+                <button type="button" class="mode-tab" data-mode="history" aria-selected="false">History</button>
+            </nav>
+
+            <div id="historyPanel" class="history-panel" hidden>
+                <div class="history-header">
+                    <span>Recent calculations</span>
+                    <button id="clearHistory" type="button" class="clear-history">Clear</button>
+                </div>
+                <div id="historyList" class="history-list">
+                    <p class="empty-history">No calculations yet</p>
+                </div>
+            </div>
+
+            <div id="standardPanel" class="keypad">
+                <button type="button" class="key key-function" data-action="clear">AC</button>
+                <button type="button" class="key key-function" data-action="sign">+/−</button>
+                <button type="button" class="key key-function" data-action="percent">%</button>
+                <button type="button" class="key key-operator" data-value="/" aria-label="Divide">÷</button>
+
+                <button type="button" class="key" data-value="7">7</button>
+                <button type="button" class="key" data-value="8">8</button>
+                <button type="button" class="key" data-value="9">9</button>
+                <button type="button" class="key key-operator" data-value="*" aria-label="Multiply">×</button>
+
+                <button type="button" class="key" data-value="4">4</button>
+                <button type="button" class="key" data-value="5">5</button>
+                <button type="button" class="key" data-value="6">6</button>
+                <button type="button" class="key key-operator" data-value="-" aria-label="Subtract">−</button>
+
+                <button type="button" class="key" data-value="1">1</button>
+                <button type="button" class="key" data-value="2">2</button>
+                <button type="button" class="key" data-value="3">3</button>
+                <button type="button" class="key key-operator" data-value="+" aria-label="Add">+</button>
+
+                <button type="button" class="key key-zero" data-value="0">0</button>
+                <button type="button" class="key" data-value=".">.</button>
+                <button type="button" class="key key-equals" data-action="equals" aria-label="Equals">=</button>
+            </div>
+
+            <div id="scientificPanel" class="keypad scientific-keypad" hidden>
+                <button type="button" class="key key-function" data-action="clear">AC</button>
+                <button type="button" class="key key-function" data-action="backspace" aria-label="Delete">⌫</button>
+                <button type="button" class="key key-function" data-action="square">x²</button>
+                <button type="button" class="key key-operator" data-value="/" aria-label="Divide">÷</button>
+
+                <button type="button" class="key" data-value="7">7</button>
+                <button type="button" class="key" data-value="8">8</button>
+                <button type="button" class="key" data-value="9">9</button>
+                <button type="button" class="key key-operator" data-value="*" aria-label="Multiply">×</button>
+
+                <button type="button" class="key" data-value="4">4</button>
+                <button type="button" class="key" data-value="5">5</button>
+                <button type="button" class="key" data-value="6">6</button>
+                <button type="button" class="key key-operator" data-value="-" aria-label="Subtract">−</button>
+
+                <button type="button" class="key" data-value="1">1</button>
+                <button type="button" class="key" data-value="2">2</button>
+                <button type="button" class="key" data-value="3">3</button>
+                <button type="button" class="key key-operator" data-value="+" aria-label="Add">+</button>
+
+                <button type="button" class="key key-zero" data-value="0">0</button>
+                <button type="button" class="key" data-value=".">.</button>
+                <button type="button" class="key key-equals" data-action="equals" aria-label="Equals">=</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const display = document.getElementById("display");
+        const calculation = document.getElementById("calculation");
+        const standardPanel = document.getElementById("standardPanel");
+        const scientificPanel = document.getElementById("scientificPanel");
+        const historyPanel = document.getElementById("historyPanel");
+        const historyList = document.getElementById("historyList");
+        const tabs = document.querySelectorAll(".mode-tab");
+        let expression = "";
+        let justCalculated = false;
+        let history = [];
+
+        function formatNumber(value) {
+            if (!Number.isFinite(value)) return "Error";
+            return String(Number.parseFloat(value.toPrecision(12)));
+        }
+
+        function updateDisplay() {
+            display.value = expression
+                ? expression.replaceAll("*", "×").replaceAll("/", "÷").replaceAll("-", "−")
+                : "0";
+        }
+        // Append input while preventing consecutive operators and duplicate decimal points.
+        function addCharacter(character) {
+            if (justCalculated && /[0-9.]/.test(character)) expression = "";
+            justCalculated = false;
+
+            if ("+-*/".includes(character)) {
+                if (!expression) return;
+                if ("+-*/".includes(expression.at(-1))) expression = expression.slice(0, -1);
+            }
+            if (character === "." && expression.split(/[+\-*/]/).at(-1).includes(".")) return;
+
+            expression += character;
+            updateDisplay();
+        }
+
+        // Evaluate the expression only after validating its characters.
+        function calculate() {
+            if (!expression || /[+\-*/]$/.test(expression)) return;
+
+            try {
+                if (!/^[0-9+\-*/.\s]+$/.test(expression)) throw new Error("Invalid expression");
+                const result = Function('"use strict"; return (' + expression + ')')();
+                if (!Number.isFinite(result)) throw new Error("Invalid result");
+                const formatted = formatNumber(result);
+                history.unshift(expression.replaceAll("*", "×").replaceAll("/", "÷").replaceAll("-", "−") + " = " + formatted);
+                history = history.slice(0, 8);
+                renderHistory();
+                calculation.textContent = display.value + " =";
+                expression = formatted;
+                justCalculated = true;
+                updateDisplay();
+            } catch {
+                calculation.textContent = "";
+                expression = "";
+                display.value = "Error";
+                justCalculated = true;
+            }
+        }
+
+        // Reset the expression and clear the calculation label.
+        function clear() {
+            expression = "";
+            justCalculated = false;
+            calculation.textContent = "";
+            updateDisplay();
+        }
+
+        // Route calculator actions to their corresponding operations.
+        function handleAction(action) {
+            if (action === "clear") clear();
+            if (action === "equals") calculate();
+            if (action === "backspace") {
+                expression = expression.slice(0, -1);
+                justCalculated = false;
+                updateDisplay();
+            }
+            if (action === "sign") {
+                if (expression) expression = String(-Number(expression));
+                updateDisplay();
+            }
+            if (action === "percent") {
+                if (expression) expression = String(Number(expression) / 100);
+                updateDisplay();
+            }
+            if (action === "square") {
+                if (expression) expression = String(Number(expression) ** 2);
+                updateDisplay();
+            }
+        }
+
+        // Render calculation history or show an empty-state message.
+        function renderHistory() {
+            if (!history.length) {
+                historyList.innerHTML = '<p class="empty-history">No calculations yet</p>';
+                return;
+            }
+            historyList.innerHTML = history.map(item =>
+                '<button type="button" class="history-item">' + item + '</button>'
+            ).join("");
+        }
+
+        // Switch between calculator modes and update tab selection and panel visibility.
+        function setMode(mode) {
+            tabs.forEach(tab => {
+                const selected = tab.dataset.mode === mode;
+                tab.classList.toggle("active", selected);
+                tab.setAttribute("aria-selected", String(selected));
+            });
+            standardPanel.hidden = mode !== "standard";
+            scientificPanel.hidden = mode !== "scientific";
+            historyPanel.hidden = mode !== "history";
+        }
+
+        document.querySelector(".calculator").addEventListener("click", event => {
+            const key = event.target.closest(".key");
+            if (!key) return;
+            if (key.dataset.value) addCharacter(key.dataset.value);
+            if (key.dataset.action) handleAction(key.dataset.action);
+        });
+
+        tabs.forEach(tab => tab.addEventListener("click", () => setMode(tab.dataset.mode)));
+        document.getElementById("clearHistory").addEventListener("click", () => {
+            history = [];
+            renderHistory();
+        });
+
+        document.addEventListener("keydown", event => {
+            if (/^[0-9]$/.test(event.key) || "+-*/.".includes(event.key)) {
+                addCharacter(event.key);
+            } else if (event.key === "Enter" || event.key === "=") {
+                event.preventDefault();
+                calculate();
+            } else if (event.key === "Backspace") {
+                handleAction("backspace");
+            } else if (event.key === "Escape") {
+                clear();
+            }
+        });
+    </script>
+</body>
+</html>

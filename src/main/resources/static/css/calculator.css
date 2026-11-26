@@ -1,0 +1,188 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    font-family: "Poppins", sans-serif;
+    background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.16), transparent 32rem),
+                linear-gradient(145deg, #090b10 0%, #11151d 100%);
+}
+
+button, input { font: inherit; }
+
+.calculator-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.calculator {
+    width: min(420px, 100%);
+    min-height: 650px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 32px;
+    background: rgba(13, 17, 23, 0.94);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(16px);
+}
+
+.display {
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    padding: 18px 20px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 24px;
+    background: #090d14;
+    overflow: hidden;
+}
+
+.calculation {
+    min-height: 24px;
+    margin-bottom: 4px;
+    color: #78808f;
+    font-size: 0.9rem;
+}
+
+.display-value {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f7f8fa;
+    font-size: clamp(2.5rem, 12vw, 4.25rem);
+    font-weight: 600;
+    line-height: 1.1;
+    text-align: right;
+}
+
+.mode-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 18px 0;
+    padding: 6px;
+    border-radius: 18px;
+    background: #18191d;
+}
+
+.mode-tab {
+    min-height: 42px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #9da4b1;
+    cursor: pointer;
+    transition: 180ms ease;
+}
+
+.mode-tab:hover { color: #ffffff; }
+.mode-tab.active {
+    background: #2a2d35;
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.key {
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, 0.045);
+    border-radius: 18px;
+    background: #20232b;
+    color: #f5f6f8;
+    font-size: 1.25rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.16);
+    transition: transform 100ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.key:hover { background: #292d36; }
+.key:active {
+    transform: translateY(2px) scale(0.98);
+    box-shadow: none;
+}
+
+.key:focus-visible, .mode-tab:focus-visible, .clear-history:focus-visible {
+    outline: 3px solid rgba(129, 140, 248, 0.7);
+    outline-offset: 2px;
+}
+
+.key-function { background: #343840; color: #d8dbe2; }
+.key-operator { background: #625bf6; color: #ffffff; }
+.key-operator:hover { background: #766ff8; }
+.key-equals { background: #f1a95a; color: #17120b; }
+.key-equals:hover { background: #f5b96f; }
+.key-zero {
+    grid-column: span 2;
+    aspect-ratio: auto;
+}
+
+.history-panel { min-height: 390px; }
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px 12px;
+    color: #cfd3db;
+}
+
+.clear-history {
+    border: 0;
+    background: transparent;
+    color: #8e96a6;
+    cursor: pointer;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-item {
+    width: 100%;
+    min-height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    background: #1b1e25;
+    color: #edf0f5;
+    text-align: right;
+    padding: 12px 16px;
+}
+
+.empty-history {
+    margin: 130px 0 0;
+    color: #777f8d;
+    text-align: center;
+}
+
+[hidden] { display: none !important; }
+
+@media (max-height: 760px) {
+    .calculator { min-height: 0; padding: 18px; }
+    .display { height: 125px; }
+    .mode-tabs { margin: 12px 0; }
+    .keypad { gap: 8px; }
+}
+
+@media (max-width: 480px) {
+    .calculator-page { padding: 12px; }
+    .calculator {
+        min-height: calc(100vh - 24px);
+        border-radius: 24px;
+        padding: 16px;
+    }
+    .display { height: 120px; }
+}
